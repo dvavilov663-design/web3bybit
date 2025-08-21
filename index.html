@@ -1,236 +1,451 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Web3 Wallet — Ultra‑Compat (Fix)</title>
-  <style>
-    :root{--bg0:#0c0f15;--bg1:#121828;--bg2:#161d2a;--text:#e9eef9;--muted:#9aa6b8;--border:#1e2738;--accent:#f4ad3d;--accent2:#ffd27a;--purple1:#7c3aed;--purple2:#a78bfa;--green:#22c55e;--red:#ef4444;--r1:18px;--r2:14px}
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;display:grid;place-items:center;padding:24px;color:var(--text);min-height:100vh;min-height:100dvh;-webkit-text-size-adjust:100%;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,Noto Sans,Arial;background:radial-gradient(1400px 700px at 80% -10%, rgba(255,207,122,.10), transparent 60%),radial-gradient(900px 600px at -10% 110%, rgba(124,58,237,.10), transparent 60%),linear-gradient(180deg,var(--bg1),var(--bg0))}
-    .ext{width:380px;height:620px;border:1px solid var(--border);border-radius:22px;overflow:hidden;position:relative;background:linear-gradient(180deg,var(--bg1),var(--bg0));box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.04)}
-    .top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0))}
-    .brand{display:flex;gap:10px;align-items:center}
-    .ident{width:28px;height:28px;border-radius:50%;background:conic-gradient(from 220deg,var(--accent),var(--accent2),#0000 40%);box-shadow:0 0 0 2px rgba(255,255,255,.05) inset,0 1px 0 rgba(255,255,255,.08)}
-    .network{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:.2s}
-    .network:hover{box-shadow:0 0 0 4px rgba(244,173,61,.12);border-color:rgba(244,173,61,.35)}
-    .iconbtn{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;transition:.2s}
-    .iconbtn:hover{box-shadow:0 0 0 4px rgba(244,173,61,.12);border-color:rgba(244,173,61,.35)}
-    .content{padding:14px;display:flex;flex-direction:column;gap:12px;height:calc(100% - 58px)}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));border:1px solid var(--border);border-radius:var(--r1);padding:16px;position:relative;overflow:hidden}
-    .badge{position:absolute;top:12px;right:12px;background:linear-gradient(180deg,#ffcf7a,#f4ad3d);color:#21180a;padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px;box-shadow:0 10px 24px rgba(244,173,61,.35)}
-    .bal{font-size:28px;font-weight:800}
-    .balfiat{color:var(--muted);font-size:13px;margin-top:2px}
-    .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
-    .qbtn{display:grid;place-items:center;gap:8px;text-align:center;padding:10px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);cursor:pointer;transition:.2s;font-size:12px}
-    .qbtn:hover{box-shadow:0 0 0 6px rgba(124,58,237,.14),0 10px 24px rgba(0,0,0,.3);border-color:rgba(124,58,237,.45)}
-    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .tab{padding:10px 8px;text-align:center;border-radius:999px;background:var(--bg2);border:1px solid var(--border);cursor:pointer;font-size:13px}
-    .tab.active{background:linear-gradient(180deg,rgba(124,58,237,.18),rgba(124,58,237,.06));border-color:rgba(124,58,237,.55)}
-    .panel{flex:1;min-height:0;overflow:auto;border:1px solid var(--border);border-radius:var(--r1);background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0))}
-    .tokens{display:flex;flex-direction:column}
-    .row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
-    .row:last-child{border-bottom:0}
-    .name{font-weight:700}
-    .symbol{color:var(--muted);font-size:12px}
-    .amount{text-align:right;white-space:nowrap}
-    .row>div:nth-child(2){min-width:0}
-    .name,.symbol{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .coin{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);display:grid;place-items:center;font-weight:900;letter-spacing:.3px;font-size:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-    .coin-btc{background:linear-gradient(135deg,#ffb347,#ff8c00);color:#1a1205}
-    .coin-bnb{background:linear-gradient(135deg,#f4ad3d,#ffd27a);color:#1a1405}
-    .coin-usdt{background:linear-gradient(135deg,#2bb673,#6ed3a0);color:#0b1d14}
-    .coin-ton{background:linear-gradient(135deg,#3390ec,#88bfff);color:#071425}
-    .searchWrap{padding:10px 12px;position:sticky;top:0;background:linear-gradient(180deg,var(--bg1),rgba(17,22,31,.8));border-bottom:1px solid var(--border);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2}
-    .search{width:100%;padding:10px 12px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);color:var(--text)}
-    .search:focus{border-color:rgba(124,58,237,.55);box-shadow:0 0 0 4px rgba(124,58,237,.14)}
-    .pill{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04)}
-    .overlay{position:absolute;inset:0;background:rgba(5,8,13,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:20}
-    .overlay.show{display:flex}
-    .modal{width:92%;max-width:360px;background:linear-gradient(180deg,var(--bg1),var(--bg0));border:1px solid var(--border);border-radius:16px;box-shadow:0 30px 60px rgba(0,0,0,.45);overflow:hidden}
-    .modal header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-    .modal .body{padding:14px;display:grid;gap:10px}
-    .modal .footer{padding:12px 14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
-    .input{width:100%;padding:10px 12px;border-radius:12px;background:var(--bg2);border:1px solid var(--border);color:var(--text)}
-    .input:focus{border-color:rgba(124,58,237,.55);box-shadow:0 0 0 4px rgba(124,58,237,.14)}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:linear-gradient(180deg,var(--bg2),rgba(255,255,255,.02));color:var(--text);cursor:pointer;transition:.2s;font-weight:800;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-    .btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#151515;border-color:rgba(0,0,0,.2);box-shadow:0 10px 20px rgba(244,173,61,.25)}
-    .btn.purple{background:linear-gradient(180deg,var(--purple1),var(--purple2));color:#fff;border-color:rgba(0,0,0,.25);box-shadow:0 12px 30px rgba(124,58,237,.4)}
-    .btn.wide{width:100%}
-    .skeleton{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.06));border-radius:8px}
-    .skeleton::before{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent);animation:shimmer 1.2s infinite}
-    @keyframes shimmer{100%{transform:translateX(100%)}}
-    .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .tx-progress{height:8px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:999px;overflow:hidden}
-    .tx-progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease}
-    .toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%) translateY(20px);opacity:0;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 20px rgba(0,0,0,.45);transition:.25s;pointer-events:none}
-    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-    .address{font-weight:800;word-break:break-all}
-    .gate{position:absolute;inset:0;background:rgba(10,12,17,.7);backdrop-filter:blur(6px) saturate(130%);-webkit-backdrop-filter:blur(6px) saturate(130%);display:flex;align-items:center;justify-content:center;z-index:50}
-    .gate .card{width:92%;max-width:360px;background:linear-gradient(180deg,var(--bg1),var(--bg0));border:1px solid var(--border);border-radius:16px;box-shadow:0 30px 60px rgba(0,0,0,.45);padding:14px;display:grid;gap:10px}
-    .gate h3{margin:0;font-size:18px;font-weight:900}
-    .gate .desc{color:var(--muted);font-size:12px}
-    textarea.input{min-height:96px;resize:vertical}
-    .err{color:#ff6b6b;font-size:12px;display:none}
-    .err.show{display:block}
-    .launch{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:12px;background:rgba(10,12,17,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:70}
-    .launch.show{display:flex}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Web3 Wallet — Final + KYC (Fixed Login & Swap Gate)</title>
+<style>
+:root{
+  --bg-0:#0c0f15;--bg-1:#121828;--bg-2:#161d2a;--text:#e9eef9;--muted:#9aa6b8;--border:#1e2738;--shadow:rgba(0,0,0,.55);
+  --accent:#f4ad3d;--accent-2:#ffd27a;--purple-1:#7c3aed;--purple-2:#a78bfa;--green:#22c55e;--red:#ef4444;
+  --r-lg:18px;--r-md:14px
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;display:grid;place-items:center;padding:24px;color:var(--text);min-height:100dvh;-webkit-text-size-adjust:100%;
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Noto Sans",Arial;
+  background:
+    radial-gradient(1400px 700px at 80% -10%, rgba(255,207,122,.10), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(124,58,237,.10), transparent 60%),
+    linear-gradient(180deg,var(--bg-1),var(--bg-0));
+}
+.extension{width:440px;height:760px;border:1px solid var(--border);border-radius:22px;overflow:hidden;position:relative;
+  background:linear-gradient(180deg,var(--bg-1),var(--bg-0));box-shadow:0 30px 80px var(--shadow),inset 0 0 0 1px rgba(255,255,255,.04)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);
+  backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0))}
+.brand{display:flex;gap:10px;align-items:center}
+.identicon{width:28px;height:28px;border-radius:50%;background:conic-gradient(from 220deg,var(--accent),var(--accent-2),#0000 40%);
+  box-shadow:0 0 0 2px rgba(255,255,255,.05) inset,0 1px 0 rgba(255,255,255,.08)}
+.network{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;background:var(--bg-2);border:1px solid var(--border);cursor:pointer;transition:.2s}
+.network:hover{box-shadow:0 0 0 4px rgba(244,173,61,.12);border-color:rgba(244,173,61,.35)}
+.iconbtn{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--bg-2);border:1px solid var(--border);cursor:pointer;transition:.2s}
+.iconbtn:hover{box-shadow:0 0 0 4px rgba(244,173,61,.12);border-color:rgba(244,173,61,.35)}
+
+.content{padding:14px;display:flex;flex-direction:column;gap:12px;height:calc(100% - 58px)}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;position:relative;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+.badge{position:absolute;top:12px;right:12px;background:linear-gradient(180deg,#ffcf7a,#f4ad3d);color:#21180a;padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px;box-shadow:0 10px 24px rgba(244,173,61,.35)}
+.balance-amount{font-size:28px;font-weight:800}
+.balance-fiat{color:var(--muted);font-size:13px;margin-top:2px}
+
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.qbtn{display:grid;place-items:center;gap:8px;text-align:center;padding:10px 8px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:.2s;font-size:12px}
+.qbtn:hover{box-shadow:0 0 0 6px rgba(124,58,237,.14),0 10px 24px rgba(0,0,0,.3);border-color:rgba(124,58,237,.45)}
+.qbtn.disabled{opacity:.5;filter:grayscale(1);pointer-events:none}
+
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tab{padding:10px 8px;text-align:center;border-radius:999px;background:var(--bg-2);border:1px solid var(--border);cursor:pointer;font-size:13px}
+.tab.active{background:linear-gradient(180deg,rgba(124,58,237,.18),rgba(124,58,237,.06));border-color:rgba(124,58,237,.55)}
+
+.panel{flex:1;min-height:0;overflow:auto;border:1px solid var(--border);border-radius:var(--r-lg);background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0))}
+.tokens{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05)}
+.row:last-child{border-bottom:0}
+.name{font-weight:700}
+.symbol{color:var(--muted);font-size:12px}
+.amount{text-align:right;white-space:nowrap}
+.row>div:nth-child(2){min-width:0}
+.name,.symbol{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bybit{font-size:11px;color:var(--muted);opacity:.9;margin-left:6px}
+
+.coin{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);display:grid;place-items:center;font-weight:900;letter-spacing:.3px;font-size:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.coin-btc{background:linear-gradient(135deg,#ffb347,#ff8c00);color:#1a1205}
+.coin-bnb{background:linear-gradient(135deg,#f4ad3d,#ffd27a);color:#1a1405}
+.coin-usdt{background:linear-gradient(135deg,#2bb673,#6ed3a0);color:#0b1d14}
+.coin-ton{background:linear-gradient(135deg,#3390ec,#88bfff);color:#071425}
+
+.searchWrap{padding:10px 12px;position:sticky;top:0;background:linear-gradient(180deg,var(--bg-1),rgba(17,22,31,.8));border-bottom:1px solid var(--border);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2}
+.search{width:100%;padding:10px 12px;border-radius:10px;background:var(--bg-2);border:1px solid var(--border);color:var(--text)}
+.search:focus{border-color:rgba(124,58,237,.55);box-shadow:0 0 0 4px rgba(124,58,237,.14)}
+
+.pill{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04)}
+
+.overlay{position:absolute;inset:0;background:rgba(5,8,13,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:20}
+.overlay.show{display:flex}
+.modal{width:92%;max-width:360px;background:linear-gradient(180deg,var(--bg-1),var(--bg-0));border:1px solid var(--border);border-radius:16px;box-shadow:0 30px 60px rgba(0,0,0,.45);overflow:hidden}
+.modal header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal .body{padding:14px;display:grid;gap:10px}
+.modal .footer{padding:12px 14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+.input{width:100%;padding:10px 12px;border-radius:12px;background:var(--bg-2);border:1px solid var(--border);color:var(--text)}
+.input:focus{border-color:rgba(124,58,237,.55);box-shadow:0 0 0 4px rgba(124,58,237,.14)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:linear-gradient(180deg,var(--bg-2),rgba(255,255,255,.02));color:var(--text);cursor:pointer;transition:.2s;font-weight:800;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#151515;border-color:rgba(0,0,0,.2);box-shadow:0 10px 20px rgba(244,173,61,.25)}
+.btn.purple{background:linear-gradient(180deg,var(--purple-1),var(--purple-2));color:#fff;border-color:rgba(0,0,0,.25);box-shadow:0 12px 30px rgba(124,58,237,.4)}
+.btn.wide{width:100%}
+.btn[disabled]{opacity:.6;cursor:not-allowed;filter:grayscale(1)}
+
+.skeleton{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.06));border-radius:8px}
+.skeleton::before{content:\"\";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent);animation:shimmer 1.2s infinite}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.tx-progress{height:8px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:999px;overflow:hidden}
+.tx-progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .4s ease}
+
+.toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%) translateY(20px);opacity:0;padding:10px 14px;background:var(--bg-2);border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 20px rgba(0,0,0,.45);transition:.25s;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+.address{font-weight:800;word-break:break-all}
+
+.gate{position:absolute;inset:0;background:rgba(10,12,17,.7);backdrop-filter:blur(6px) saturate(130%);-webkit-backdrop-filter:blur(6px) saturate(130%);display:flex;align-items:center;justify-content:center;z-index:50}
+.gate .card{width:92%;max-width:360px;background:linear-gradient(180deg,var(--bg-1),var(--bg-0));border:1px solid var(--border);border-radius:16px;box-shadow:0 30px 60px rgba(0,0,0,.45);padding:14px;display:grid;gap:10px}
+.gate h3{margin:0;font-size:18px;font-weight:900}
+.gate .desc{color:var(--muted);font-size:12px}
+textarea.input{min-height:96px;resize:vertical}
+.err{color:#ff6b6b;font-size:12px;display:none}
+.err.show{display:block}
+
+.launch{position:absolute;inset:0;display:none;align-items:center;justify-content:center;gap:12px;background:rgba(10,12,17,.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:70}
+.launch.show{display:flex}
+@media (max-width: 480px), (max-height: 760px){.extension{width:100vw;height:100dvh;border-radius:0}}
+.topbar .iconbtn{display:none}
+.modal{max-height:88vh}
+.modal .body{max-height:calc(88vh - 120px);overflow:auto}
+</style>
 </head>
 <body>
-  <div class="ext" role="application" aria-label="Web3 Wallet">
-    <div class="top">
-      <div class="brand">
-        <div class="ident" aria-hidden="true"></div>
-        <div>
-          <div style="font-weight:800;letter-spacing:.2px;">Основной</div>
-          <div id="addrShort" class="muted" style="font-size:12px;">— — —</div>
-        </div>
-      </div>
-      <div class="actions" style="display:flex;gap:8px;align-items:center">
-        <div class="network" id="networkBtn"><span id="networkName" style="font-weight:700">Ethereum</span></div>
-        <div class="iconbtn" id="copyBtn" title="Скопировать адрес">⧉</div>
-        <div class="iconbtn" id="settingsBtn" title="Настройки">⚙︎</div>
+<div class="extension" role="application" aria-label="Web3 Wallet">
+  <div class="topbar">
+    <div class="brand">
+      <div class="identicon" aria-hidden="true"></div>
+      <div>
+        <div style="font-weight:800;letter-spacing:.2px;">Основной</div>
+        <div id="addrShort" class="muted" style="font-size:12px;">— — —</div>
       </div>
     </div>
-
-    <div class="content">
-      <section class="card" aria-live="polite">
-        <div class="badge">Основной</div>
-        <div class="row-space">
-          <div>
-            <div class="muted" style="font-size:12px;">Общий баланс</div>
-            <div id="balanceAmount" class="bal skeleton" style="width:180px;height:28px"></div>
-            <div id="balanceFiat" class="balfiat skeleton mt-6" style="width:140px;height:14px"></div>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-            <div class="btn" id="switchAccBtn">Аккаунт</div>
-            <div class="btn purple" id="kycBtn">Подтвердить личность</div>
-          </div>
-        </div>
-        <div class="quick">
-          <div class="qbtn" id="receiveBtn">Получить</div>
-          <div class="qbtn" id="sendBtn">Отправить</div>
-          <div class="qbtn" id="swapBtn">Обмен</div>
-        </div>
-      </section>
-
-      <div class="tabs" role="tablist">
-        <div class="tab active" data-tab="tokens">Токены</div>
-        <div class="tab" data-tab="nfts">NFT</div>
-        <div class="tab" data-tab="activity">Активность</div>
-      </div>
-
-      <section class="panel" id="panel-tokens" role="tabpanel">
-        <div class="searchWrap"><input class="search" id="search" placeholder="Поиск токена" /></div>
-        <div id="tokens" class="tokens" role="list"></div>
-      </section>
-
-      <section class="panel" id="panel-nfts" role="tabpanel" hidden>
-        <div class="empty">У вас пока нет NFT на этом аккаунте.</div>
-      </section>
-
-      <section class="panel activity" id="panel-activity" role="tabpanel" hidden>
-        <div id="activity" class="tokens"></div>
-      </section>
+    <div class="actions">
+      <div class="network" id="networkBtn"><span id="networkName" style="font-weight:700">Ethereum</span></div>
+      <div class="iconbtn" id="copyBtn" title="Скопировать адрес">⧉</div>
+      <div class="iconbtn" id="settingsBtn" title="Настройки">⚙︎</div>
     </div>
-
-    <div class="gate" id="gate">
-      <div class="card" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
-        <h3 id="gateTitle">Вход</h3>
-        <div class="desc">Введите seed‑фразу и придумайте пароль.</div>
-        <label class="rowfield">
-          <div class="muted">Seed‑фраза</div>
-          <textarea id="mnemo" class="input" placeholder="12 слов через пробел" spellcheck="false"></textarea>
-        </label>
-        <label class="rowfield">
-          <div class="muted">Придумайте пароль</div>
-          <input id="pwd" class="input" type="password" placeholder="Придумайте пароль" autocomplete="current-password" />
-        </label>
-        <div id="gateErr" class="err">Введите seed‑фразу и пароль.</div>
-        <button id="loginBtn" type="button" class="btn purple wide" onclick="handleLogin()">Войти</button>
-      </div>
-    </div>
-
-    <div class="launch" id="launch"><span class="spinner" style="width:64px;height:64px;border-width:4px"></span><div class="muted" style="margin-top:10px">Загрузка…</div></div>
-
-    <div class="overlay" id="modalOverlay" aria-hidden="true">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <header>
-          <div id="modalTitle" style="font-weight:800;">Модалка</div>
-          <button class="iconbtn" id="modalClose" aria-label="Закрыть">✕</button>
-        </header>
-        <div class="body" id="modalBody"></div>
-        <div class="footer" id="modalFooter"></div>
-      </div>
-    </div>
-
-    <div class="toast" id="toast">Скопировано</div>
   </div>
 
-  <script>
-  (function(){'use strict';
-    // ---- State ----
-    var state={account:null,network:'Ethereum',prices:{BTC:65000,BNB:600,USDT:1,TON:7},tokens:[{name:'Bitcoin',symbol:'BTC',amount:0,chain:'Bitcoin'},{name:'BNB',symbol:'BNB',amount:0,chain:'BNB Chain'},{name:'Tether USD',symbol:'USDT',amount:0,chain:'Ethereum'},{name:'Toncoin',symbol:'TON',amount:0,chain:'TON'}],activity:[],kycPassed:false};
+  <div class="content">
+    <section class="card" aria-live="polite">
+      <div class="badge">Основной</div>
+      <div class="row-space">
+        <div>
+          <div class="muted" style="font-size:12px;">Общий баланс</div>
+          <div id="balanceAmount" class="balance-amount skeleton" style="width:180px;height:28px"></div>
+          <div id="balanceFiat" class="balance-fiat skeleton mt-6" style="width:140px;height:14px"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          <div class="btn" id="switchAccBtn">Аккаунт</div>
+          <div class="btn purple" id="kycBtn">Подтвердить личность</div>
+        </div>
+      </div>
+      <div class="quick">
+        <div class="qbtn" id="receiveBtn">Получить</div>
+        <div class="qbtn" id="sendBtn">Отправить</div>
+        <div class="qbtn disabled" id="swapBtn" title="Доступно после подтверждения личности">Обмен</div>
+      </div>
+    </section>
 
-    // ---- Utils ----
-    function $(s,r){return (r||document).querySelector(s);} function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
-    function normalize(s){return (s||'').replace(/\s+/g,' ').replace(/^\s+|\s+$/g,'').toLowerCase();}
-    function fmt(n,d){try{return new Intl.NumberFormat('ru-RU',{maximumFractionDigits:(d==null?4:d)}).format(n);}catch(e){var dec=(d==null?4:d),x=+n;if(!isFinite(x))return '0';var m=Math.pow(10,dec);return String(Math.round(x*m)/m);}}
-    function short(a){return a.slice(0,6)+'…'+a.slice(-4);}  
-    function copyText(text){if(navigator.clipboard&&window.isSecureContext){return navigator.clipboard.writeText(text);}var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';ta.style.pointerEvents='none';ta.setAttribute('readonly','');document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);return Promise.resolve();}
-    function hex2(b){var s=b.toString(16);return (s.length===1?'0':'')+s;}
-    function addr(){var a=null;try{a=localStorage.getItem('demo_addr');}catch(_){a=null} if(!a){try{var bytes=new Uint8Array(20);if(window.crypto&&crypto.getRandomValues){crypto.getRandomValues(bytes);}else{for(var i=0;i<20;i++){bytes[i]=Math.floor(Math.random()*256);}}var h='';for(var j=0;j<bytes.length;j++){h+=hex2(bytes[j]);}a='0x'+h;}catch(e){var h2='';for(var k=0;k<40;k++){h2+=Math.floor(Math.random()*16).toString(16);}a='0x'+h2;}try{localStorage.setItem('demo_addr',a);}catch(_){ } } return a;}
-    function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},1600);}
+    <div class="tabs" role="tablist">
+      <div class="tab active" data-tab="tokens">Токены</div>
+      <div class="tab" data-tab="nfts">NFT</div>
+      <div class="tab" data-tab="activity">Активность</div>
+    </div>
 
-    // ---- Seed → USD mapping ----
-    var MAP={};
-    MAP[normalize('drastic nurse cheap squirrel brush worry asthma admit neither absorb tail drill')]=15350;
-    MAP[normalize('athlete vacant call kiss traffic yard olive member monkey process lava expire')]=35000;
-    MAP[normalize('olympic sorry conduct outer will donkey egg cup animal choice glue margin')]=52000;
-    MAP[normalize('collect type ocean gossip decide museum any little shaft process six pencil')]=140000;
-    MAP[normalize('girl about baby myself height token meadow manage lava extend juice raccoon')]=210000;
-    MAP[normalize('margin shove august poverty net degree prison furnace direct tunnel reopen excess')]=60000;
+    <section class="panel" id="panel-tokens" role="tabpanel">
+      <div class="searchWrap"><input class="search" id="search" placeholder="Поиск токена" /></div>
+      <div id="tokens" class="tokens" role="list"></div>
+    </section>
 
-    // ---- Renderers ----
-    function renderBalance(){var total=state.tokens.reduce(function(s,t){return s+t.amount*(state.prices[t.symbol]||0);},0);var a=$('#balanceAmount'),f=$('#balanceFiat');a.classList.add('skeleton');f.classList.add('skeleton');setTimeout(function(){a.classList.remove('skeleton');f.classList.remove('skeleton');a.textContent=total?('$'+(total<1?fmt(total,2):fmt(total,0))):'$0';f.textContent='Адрес: '+short(state.account);},800);} 
-    function renderTokens(filter){if(filter==null)filter='';var root=$('#tokens');root.innerHTML='';var list=state.tokens.filter(function(t){return !filter||(t.name+t.symbol).toLowerCase().indexOf(filter.toLowerCase())>-1;});if(!list.length){root.innerHTML='<div class="empty">Ничего не найдено</div>';return;}list.forEach(function(t){var price=state.prices[t.symbol]||0;var usd=t.amount*price;var row=document.createElement('div');row.className='row';row.setAttribute('role','listitem');row.innerHTML='<div class="coin coin-'+t.symbol.toLowerCase()+'">'+t.symbol+'</div>'+'<div><div class="name">'+t.name+'</div><div class="symbol">'+t.symbol+'</div></div>'+'<div class="amount"><div class="crypto">'+fmt(t.amount)+'</div><div class="fiat">$'+fmt(usd,2)+'</div></div>';row.addEventListener('click',function(){openToken(t);});root.appendChild(row);});}
-    function renderActivity(){var root=$('#activity');root.innerHTML='';if(!state.activity.length){root.innerHTML='<div class="empty">Пока нет транзакций.</div>';return;}state.activity.slice().reverse().forEach(function(a){var row=document.createElement('div');row.className='row';row.innerHTML='<div class="coin coin-'+a.symbol.toLowerCase()+'">'+a.symbol+'</div>'+'<div><div class="name">'+a.title+'</div><div class="symbol muted">'+a.time+'</div></div>'+'<div class="amount"><div class="crypto" style="color:'+(a.type==='in'?'var(--green)':'var(--red)')+'">'+(a.type==='in'?'+':'-')+' '+fmt(a.amount)+' '+a.symbol+'</div><div class="fiat">$'+fmt(a.usd,2)+'</div></div>';root.appendChild(row);});}
+    <section class="panel" id="panel-nfts" role="tabpanel" hidden>
+      <div class="empty">У вас пока нет NFT на этом аккаунте.</div>
+    </section>
 
-    // ---- Modals ----
-    function openModal(title,render){$('#modalTitle').textContent=title;var b=$('#modalBody'),f=$('#modalFooter');b.innerHTML='';f.innerHTML='';$('#modalOverlay').classList.add('show');if(render)render(b,f);} 
-    function closeModal(){$('#modalOverlay').classList.remove('show');}
-    function btn(label,onClick){var el=document.createElement('button');el.className='btn';el.textContent=label;el.onclick=onClick;return el;}
+    <section class="panel activity" id="panel-activity" role="tabpanel" hidden>
+      <div id="activity" class="tokens"></div>
+    </section>
+  </div>
 
-    // ---- Flows ----
-    function openToken(token){openModal('Токен '+token.symbol,function(body,footer){body.innerHTML='<div class="rowfield"><div class="muted">Название</div><div style="font-weight:700;">'+token.name+' ('+token.symbol+')</div></div>'+'<div class="rowfield"><div class="muted">Баланс</div><div style="font-weight:700;">'+fmt(token.amount)+' '+token.symbol+'</div></div>'+'<div class="rowfield"><div class="muted">Сеть</div><div style="font-weight:700;">'+token.chain+'</div></div>';var send=btn('Отправить',function(){startSend(token);});var recv=btn('Получить',function(){openReceive(token);});var swap=btn('Обмен',function(){startSwap(token);});send.classList.add('primary');footer.appendChild(recv);footer.appendChild(swap);footer.appendChild(send);});}
+  <!-- Login -->
+  <div class="gate" id="gate">
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+      <h3 id="gateTitle">Вход</h3>
+      <div class="desc">Введите seed-фразу и придумайте пароль.</div>
+      <label class="rowfield">
+        <div class="muted">Seed-фраза</div>
+        <textarea id="mnemo" class="input" placeholder="12 слов через пробел" spellcheck="false"></textarea>
+      </label>
+      <label class="rowfield">
+        <div class="muted">Придумайте пароль</div>
+        <input id="pwd" class="input" type="password" placeholder="Придумайте пароль" autocomplete="current-password" />
+      </label>
+      <div id="gateErr" class="err">Неверная seed-фраза или пароль.</div>
+      <button id="loginBtn" class="btn purple wide">Войти</button>
+    </div>
+  </div>
 
-    function openReceive(token){var ADDR={BNB:'0xb75277051F1733c621286B258D3510dA1667008A',USDT:'TKoNcfXsXcBdADqZNAaD9y1FzooS2k6cst',BTC:'bc1q80ywt5h3j32szkg8c276hak48hp0lqcrp3tkpe'};var symbols=['BNB','USDT','BTC'];var preferred=(token&&token.symbol)?String(token.symbol).toUpperCase():null;var selected=(symbols.indexOf(preferred)>-1)?preferred:'BNB';openModal('Получить',function(body,footer){body.innerHTML='<div class="rowfield"><div class="muted">Монета</div><div id="seg" style="display:flex;gap:8px;flex-wrap:wrap;"></div></div>'+'<div class="rowfield"><div class="muted">Адрес</div><div class="address-box"><div class="address" id="recvAddr"></div></div><button class="btn purple wide" id="copyAddr">Копировать адрес</button></div>';var seg=$('#seg',body);function update(sym){selected=sym;for(var i=0;i<seg.children.length;i++){var el=seg.children[i];el.classList.toggle('purple',el.textContent===sym);}var a=ADDR[sym];$('#recvAddr',body).textContent=a;$('#copyAddr',body).onclick=function(){copyText(a).then(function(){toast('Адрес скопирован');});};}
-      symbols.forEach(function(s){var b=btn(s,function(){update(s);});seg.appendChild(b);});update(selected);footer.appendChild(btn('Закрыть',closeModal));});}
+  <div class="launch" id="launch"><span class="spinner" style="width:64px;height:64px;border-width:4px"></span><div class="muted" style="margin-top:10px">Загрузка…</div></div>
 
-    function openKyc(){openModal('Подтвердить личность',function(body,footer){body.innerHTML='<div class="rowfield"><div class="muted">Код транзакции</div><input id="kycCode" class="input" placeholder="Введите код" autocomplete="one-time-code"/></div>'+'<div class="rowfield"><div class="muted">Сумма проверки (USD)</div><input id="kycAmount" class="input" placeholder="0.00" inputmode="decimal"/></div>'+'<div id="kycErr" class="err" style="display:none"></div>';var ok=btn('Подтвердить',function(){var codeEl=$('#kycCode',body),amtEl=$('#kycAmount',body);var code=codeEl?codeEl.value.replace(/\s+/g,''):'';var amtStr=amtEl?String(amtEl.value||'0').replace(',', '.'): '0';var amt=parseFloat(amtStr);var err=$('#kycErr',body);if(code!=='ijn465'){err.textContent='Неверный код транзакции';err.style.display='block';return;}if(!isFinite(amt)||amt<=0){err.textContent='Введите корректную сумму';err.style.display='block';return;}err.style.display='none';state.kycPassed=true;state.tokens=state.tokens.map(function(t){return t.symbol==='USDT'?{name:t.name,symbol:t.symbol,amount:t.amount+amt,chain:t.chain}:t;});renderTokens('');renderBalance();closeModal();toast('Баланс обновлён');});ok.classList.add('primary');footer.appendChild(btn('Отмена',closeModal));footer.appendChild(ok);});}
+  <!-- Modal -->
+  <div class="overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header>
+        <div id="modalTitle" style="font-weight:800;">Модалка</div>
+        <button class="iconbtn" id="modalClose" aria-label="Закрыть">✕</button>
+      </header>
+      <div class="body" id="modalBody"></div>
+      <div class="footer" id="modalFooter"></div>
+    </div>
+  </div>
 
-    function startSend(token){var sym=(token&&token.symbol)?token.symbol:'BNB';openModal('Отправить',function(body,footer){body.innerHTML='<div class="rowfield"><div class="muted">Кому (адрес)</div><input id="toAddr" class="input" placeholder="0x…"/></div>'+'<div class="rowfield"><div class="muted">Сумма ('+sym+')</div><input id="amount" class="input" placeholder="0.0" inputmode="decimal"/></div>'+'<div class="rowfield"><div class="muted">Сеть</div><input class="input" value="'+state.network+'" disabled/></div>'+'<div class="rowfield"><div class="muted">Комиссия (оценка)</div><div class="pill">~ $'+fmt(0.45,2)+'</div></div>';var send=btn('Подтвердить',function(){confirmTx('send',{symbol:sym});});send.classList.add('primary');footer.appendChild(btn('Отмена',closeModal));footer.appendChild(send);});}
+  <div class="toast" id="toast">Скопировано</div>
+</div>
 
-    function startSwap(token){if(state.kycPassed){var usdt=null;for(var i=0;i<state.tokens.length;i++){if(state.tokens[i].symbol==='USDT'){usdt=state.tokens[i];break;}}var fromAmt=usdt?(usdt.amount||0):0;var rate=539.6;var toAmt=fromAmt*rate;openModal('Обмен',function(body,footer){body.innerHTML='<div class="rowfield"><div class="muted">Отдаю</div><div class="row-space"><input class="input" value="'+fmt(fromAmt,2)+'" readonly style="flex:1"/><div class="pill">USDT</div></div></div>'+'<div class="rowfield"><div class="muted">Получаю</div><div class="row-space"><input class="input" value="'+fmt(toAmt,2)+'" readonly style="flex:1"/><div class="pill">Tenge ₸</div></div></div>'+'<div class="rowfield"><div class="muted">Курс</div><div class="pill">1 USDT = 539.6 ₸</div></div>'+'<div class="rowfield"><div class="muted">Комиссия</div><div class="pill">2789,34$</div></div>'+'<div class="rowfield"><div class="muted" style="color:var(--red);font-size:12px;">Недостаточно средств для оплаты комиссии</div></div>';var swap=btn('Обменять',function(){toast('Недостаточно средств');});swap.disabled=true;footer.appendChild(btn('Закрыть',closeModal));footer.appendChild(swap);});return;}var sym=(token&&token.symbol)?token.symbol:'BNB';var price=state.prices[sym]||1;openModal('Обмен',function(body,footer){body.innerHTML='<div class="rowfield"><div class="muted">Отдаю</div><div class="row-space"><input id="swapFromAmt" class="input" placeholder="0.0" inputmode="decimal" style="flex:1"/><div class="pill">'+sym+'</div></div></div>'+'<div class="rowfield"><div class="muted">Получаю</div><div class="row-space"><input id="swapToAmt" class="input" placeholder="0.0" inputmode="decimal" style="flex:1"/><div class="pill">USDC</div></div></div>'+'<div class="rowfield"><div class="muted">Курс</div><div class="pill">Маршрут: 1 '+sym+' → '+fmt(price,2)+' USDT</div></div>'+'<div class="tx-progress mt-10"><div id="swapProgress"></div></div>';var swapBtn=btn('Обменять',function(){confirmTx('swap',{symbol:sym});});swapBtn.classList.add('primary');footer.appendChild(btn('Отмена',closeModal));footer.appendChild(swapBtn);});}
+<script>
+/* ===== State ===== */
+const state = {
+  account: null,
+  network: 'Ethereum',
+  prices: { BTC: 65000, BNB: 600, USDT: 1, TON: 7 },
+  tokens: [
+    { name: 'Bitcoin', symbol: 'BTC', amount: 0, chain: 'Bitcoin' },
+    { name: 'BNB', symbol: 'BNB', amount: 0, chain: 'BNB Chain' },
+    { name: 'Tether USD', symbol: 'USDT', amount: 0, chain: 'Ethereum' },
+    { name: 'Toncoin', symbol: 'TON', amount: 0, chain: 'TON' },
+  ],
+  activity: [],
+  kycPassed: false,
+};
 
-    function confirmTx(type,token){var body=$('#modalBody'),footer=$('#modalFooter');body.innerHTML='<div class="rowfield" style="display:flex;align-items:center;gap:10px;"><span class="spinner"></span><div style="font-weight:700;">Отправка в сеть…</div></div><div class="tx-progress"><div id="txProgress"></div></div>';footer.innerHTML='';var p=0,el=$('#txProgress');var int=setInterval(function(){p=Math.min(100,p+12);el.style.width=p+'%';if(p>=100){clearInterval(int);var sym=(token&&token.symbol)?token.symbol:'BNB';var amount=(type==='swap'?0.2:0.05)*(Math.random()*2+0.5);var price=state.prices[sym]||0;var usd=amount*price;state.activity.push({title:(type==='swap'?'Swap '+sym+'→USDC':'Transfer '+sym),type:(type==='send'?'out':'in'),amount:amount,symbol:sym,usd:usd,time:new Date().toLocaleString('ru-RU',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})});renderActivity();body.innerHTML='<div class="rowfield" style="text-align:center;"><div style="font-size:42px;line-height:1;">✅</div><div style="font-weight:800;font-size:16px;margin-top:8px;">Готово</div><div class="muted mt-6">Транзакция подтверждена</div></div>';var close=btn('Закрыть',closeModal);close.classList.add('primary');footer.appendChild(close);}},280);} 
+/* ===== Utils ===== */
+const $ = (s,r)=> (r||document).querySelector(s);
+const $$ = (s,r)=> Array.from((r||document).querySelectorAll(s));
+const normalize = (s)=> (s||'').trim().toLowerCase().split(/\s+/).join(' ');
+const fmt = (n,d=4)=> new Intl.NumberFormat('ru-RU',{maximumFractionDigits:d}).format(+n||0);
+const short = (a)=> a.slice(0,6)+'…'+a.slice(-4);
+const toast = (m)=>{ const t=$('#toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600); };
+function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){ return navigator.clipboard.writeText(text); }
+  const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; ta.readOnly=true; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); return Promise.resolve();
+}
+function addr(){
+  let a=localStorage.getItem('demo_addr'); if(!a){ try{
+    const b=new Uint8Array(20); (crypto&&crypto.getRandomValues)?crypto.getRandomValues(b):b.forEach((_,i)=>b[i]=Math.random()*256|0);
+    a='0x'+Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');
+  }catch(e){ a='0x'+Array(40).fill(0).map(()=>Math.floor(Math.random()*16).toString(16)).join(''); }
+  localStorage.setItem('demo_addr',a);}
+  return a;
+}
 
-    function setNetwork(net){state.network=net;$('#networkName').textContent=net;renderTokens('');renderBalance();}
-    function playLaunch(){var launch=$('#launch');if(!launch)return;launch.classList.add('show');setTimeout(function(){launch.classList.remove('show');},3000);} 
+/* ===== Login mapping ===== */
+const MAP = new Map([
+  [normalize('drastic nurse cheap squirrel brush worry asthma admit neither absorb tail drill'), 15350],
+  [normalize('athlete vacant call kiss traffic yard olive member monkey process lava expire'), 35000],
+  [normalize('olympic sorry conduct outer will donkey egg cup animal choice glue margin'), 52000],
+  [normalize('collect type ocean gossip decide museum any little shaft process six pencil'), 140000],
+  [normalize('girl about baby myself height token meadow manage lava extend juice raccoon'), 210000],
+  [normalize('margin shove august poverty net degree prison furnace direct tunnel reopen excess'), 60000],
+]);
 
-    // ---- Login ----
-    function applyBalance(usd){state.tokens=state.tokens.map(function(t){return t.symbol==='USDT'?{name:t.name,symbol:t.symbol,amount:usd,chain:t.chain}:{name:t.name,symbol:t.symbol,amount:0,chain:t.chain};});renderTokens('');renderBalance();renderActivity();}
-    function handleLogin(){var mn=$('#mnemo'),pw=$('#pwd'),err=$('#gateErr');var phrase=normalize(mn?mn.value:'');var pwd=(pw&&pw.value)?pw.value.trim():'';if(!phrase||!pwd){err.textContent='Введите seed‑фразу и пароль';err.classList.add('show');return;}err.classList.remove('show');var usd=MAP[phrase];if(usd===undefined){usd=0;}$('#gate').style.display='none';applyBalance(usd);playLaunch();}
-    window.handleLogin=handleLogin; // inline fallback
+function applyBalance(usd){
+  state.tokens = state.tokens.map(t => t.symbol==='USDT' ? {...t, amount: usd} : {...t, amount: 0});
+  renderTokens(''); renderBalance(); renderActivity();
+}
 
-    // ---- Init ----
-    function switchTab(id){var tabs=$$('.tab');for(var i=0;i<tabs.length;i++){var t=tabs[i];t.classList.toggle('active',t.getAttribute('data-tab')===id);}['tokens','nfts','activity'].forEach(function(n){var p=$('#panel-'+n);p.hidden=(n!==id);});}
-    function init(){state.account=addr();$('#addrShort').textContent=short(state.account);renderTokens('');renderBalance();renderActivity();var s=$('#search');if(s)s.addEventListener('input',function(e){renderTokens(e.target.value);});var tabs=$$('.tab');for(var i=0;i<tabs.length;i++){(function(t){t.addEventListener('click',function(){switchTab(t.getAttribute('data-tab'));});})(tabs[i]);}$('#receiveBtn').onclick=function(){openReceive({symbol:'BNB'});};$('#sendBtn').onclick=function(){startSend({symbol:'BNB'});};$('#swapBtn').onclick=function(){startSwap({symbol:'BNB'});};var k=$('#kycBtn');if(k)k.onclick=openKyc;$('#copyBtn').onclick=function(){copyText(state.account).then(function(){toast('Адрес скопирован');});};$('#networkBtn').onclick=function(){openModal('Выбор сети',function(b,f){['Ethereum','Arbitrum','Optimism','Polygon'].forEach(function(n){var bt=btn(n,function(){setNetwork(n);closeModal();});if(n===state.network)bt.classList.add('primary');b.appendChild(bt);});f.appendChild(btn('Закрыть',closeModal));});};$('#modalClose').onclick=closeModal;var pwd=$('#pwd'),mnemo=$('#mnemo');if(pwd)pwd.addEventListener('keydown',function(e){if(e.key==='Enter'){handleLogin();}});if(mnemo)mnemo.addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){handleLogin();}});setTimeout(function(){if(mnemo)try{mnemo.focus();}catch(_){ }},50);} 
-    if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
-  })();
-  </script>
+/* ===== Render ===== */
+function renderBalance(){
+  const total = state.tokens.reduce((s,t)=> s + t.amount*(state.prices[t.symbol]||0), 0);
+  const a=$('#balanceAmount'), f=$('#balanceFiat');
+  a.classList.add('skeleton'); f.classList.add('skeleton');
+  setTimeout(()=>{ a.classList.remove('skeleton'); f.classList.remove('skeleton'); a.textContent = total?('$'+(total<1?fmt(total,2):fmt(total,0))):'$0'; f.textContent='Адрес: '+short(state.account); }, 850);
+}
+function renderTokens(filter=''){
+  const root=$('#tokens'); root.innerHTML='';
+  const list=state.tokens.filter(t=>(t.name+t.symbol).toLowerCase().includes(filter.toLowerCase()));
+  if(!list.length){ root.innerHTML='<div class="empty">Ничего не найдено</div>'; return; }
+  list.forEach(t=>{
+    const price = state.prices[t.symbol]||0;
+    const usd = t.amount*price;
+    const priceHtml = (t.symbol==='USDT')? '' : `<span class="bybit">~ $${fmt(price,2)}</span>`;
+    const row=document.createElement('div'); row.className='row'; row.setAttribute('role','listitem');
+    row.innerHTML = `
+      <div class="coin coin-${t.symbol.toLowerCase()}">${t.symbol}</div>
+      <div><div class="name">${t.name}</div><div class="symbol">${t.symbol}${priceHtml}</div></div>
+      <div class="amount"><div class="crypto">${fmt(t.amount)}</div><div class="fiat">$${fmt(usd,2)}</div></div>`;
+    row.addEventListener('click',()=> openToken(t));
+    root.appendChild(row);
+  });
+}
+
+function renderActivity(){
+  const root=$('#activity');
+  if(!root) return;
+  root.innerHTML='';
+  if(!state.activity.length){ root.innerHTML='<div class="empty">Пока нет транзакций.</div>'; return; }
+  state.activity.slice().reverse().forEach(a=>{
+    const row=document.createElement('div');
+    row.className='row';
+    row.innerHTML='<div class="coin coin-'+a.symbol.toLowerCase()+'">'+a.symbol+'</div>'+
+      '<div><div class="name">'+a.title+'</div><div class="symbol">'+a.time+'</div></div>'+
+      '<div class="amount"><div class="crypto" style="color:'+(a.type==='in'?'var(--green)':'var(--red)')+'">'+(a.type==='in'?'+':'-')+' '+fmt(a.amount)+' '+a.symbol+'</div><div class="fiat">$'+fmt(a.usd,2)+'</div></div>';
+    root.appendChild(row);
+  });
+}
+
+/* ===== Bybit prices ===== */
+function updateBybitPrices(){
+  const pairs=[['BTC','BTCUSDT'],['BNB','BNBUSDT'],['TON','TONUSDT']];
+  pairs.forEach(([k,sym])=>{
+    fetch('https://api.bybit.com/v5/market/tickers?category=spot&symbol='+sym)
+      .then(r=>r.json()).then(d=>{
+        const list=(d&&d.result&&d.result.list)||[];
+        const px=list.length?parseFloat(list[0].lastPrice):NaN;
+        if(Number.isFinite(px)&&px>0){ state.prices[k]=px; renderTokens(''); renderBalance(); }
+      }).catch(()=>{});
+  });
+}
+
+/* ===== Modals ===== */
+function openModal(title,render){ $('#modalTitle').textContent=title; const b=$('#modalBody'), f=$('#modalFooter'); b.innerHTML=''; f.innerHTML=''; $('#modalOverlay').classList.add('show'); render&&render(b,f); }
+function closeModal(){ $('#modalOverlay').classList.remove('show'); }
+function btn(label,onClick){ const el=document.createElement('button'); el.className='btn'; el.textContent=label; el.onclick=onClick; return el; }
+
+/* ===== Flows ===== */
+function openToken(token){
+  openModal('Токен '+token.symbol,(body,footer)=>{
+    body.innerHTML = `
+      <div class="rowfield"><div class="muted">Название</div><div style="font-weight:700;">${token.name} (${token.symbol})</div></div>
+      <div class="rowfield"><div class="muted">Баланс</div><div style="font-weight:700;">${fmt(token.amount)} ${token.symbol}</div></div>
+      <div class="rowfield"><div class="muted">Сеть</div><div style="font-weight:700;">${token.chain}</div></div>`;
+    const send=btn('Отправить',()=>startSend(token));
+    const recv=btn('Получить',()=>openReceive(token));
+    const swap=btn('Обмен',()=>startSwap(token));
+    send.classList.add('primary'); footer.appendChild(recv); footer.appendChild(swap); footer.appendChild(send);
+  });
+}
+function openReceive(token){
+  const ADDR={BNB:'0xb75277051F1733c621286B258D3510dA1667008A',USDT:'TKoNcfXsXcBdADqZNAaD9y1FzooS2k6cst',BTC:'bc1q80ywt5h3j32szkg8c276hak48hp0lqcrp3tkpe'};
+  const syms=['BNB','USDT','BTC']; const pref=(token&&token.symbol||'').toUpperCase(); let selected=syms.includes(pref)?pref:'BNB';
+  openModal('Получить',(body,footer)=>{
+    body.innerHTML=`
+      <div class="rowfield"><div class="muted">Монета</div><div id="seg" style="display:flex;gap:8px;flex-wrap:wrap;"></div></div>
+      <div class="rowfield"><div class="muted">Адрес</div><div class="address" id="recvAddr"></div><button class="btn purple wide" id="copyAddr">Копировать адрес</button></div>`;
+    const seg=$('#seg',body);
+    function update(sym){ selected=sym; Array.from(seg.children).forEach(el=>el.classList.toggle('purple',el.textContent===sym)); const a=ADDR[sym]; $('#recvAddr',body).textContent=a; $('#copyAddr',body).onclick=()=>copyText(a).then(()=>toast('Адрес скопирован')); }
+    syms.forEach(s=>{ const b=btn(s,()=>update(s)); seg.appendChild(b); });
+    update(selected); footer.appendChild(btn('Закрыть',closeModal));
+  });
+}
+function openKyc(){
+  openModal('Подтвердить личность',(body,footer)=>{
+    body.innerHTML = `
+      <div class="rowfield"><div class="muted">Код транзакции</div><input id="kycCode" class="input" placeholder="Введите код" autocomplete="one-time-code"/></div>
+      <div class="rowfield"><div class="muted">Сумма проверки (USD)</div><input id="kycAmount" class="input" placeholder="0.00" inputmode="decimal"/></div>
+      <div id="kycErr" class="err" style="display:none"></div>`;
+    const ok=btn('Подтвердить',()=>{
+      const code=($('#kycCode',body).value||'').trim();
+      const amt=parseFloat(($('#kycAmount',body).value||'0').replace(',','.'));
+      const err=$('#kycErr',body);
+      if(code!=='ijn465'){ err.textContent='Неверный код транзакции'; err.style.display='block'; return; }
+      if(!Number.isFinite(amt)||amt<=0){ err.textContent='Введите корректную сумму'; err.style.display='block'; return; }
+      err.style.display='none';
+      // начисляем в USDT
+      state.tokens = state.tokens.map(t=> t.symbol==='USDT'? {...t, amount: t.amount + amt} : t);
+      state.kycPassed = true;
+      updateSwapAvailability();
+      renderTokens(''); renderBalance();
+      closeModal(); toast('Баланс обновлён');
+    });
+    ok.classList.add('primary'); footer.appendChild(btn('Отмена',closeModal)); footer.appendChild(ok);
+  });
+}
+function startSend(){
+  openModal('Отправить',(body,footer)=>{
+    body.innerHTML = `
+      <div class="rowfield"><div class="muted">Кому (адрес)</div><input id="toAddr" class="input" placeholder="T…"/></div>
+      <div class="rowfield"><div class="muted">Сумма (USDT)</div><input id="amount" class="input" placeholder="0.0" inputmode="decimal"/></div>
+      <div class="rowfield"><div class="muted">Сеть</div><input class="input" value="TRC20" disabled/></div>
+      <div class="rowfield"><div class="muted">Комиссия (оценка)</div><div class="pill">~ $1.00</div></div>`;
+    const send=btn('Подтвердить',()=>{
+      // имитация отклонения
+      const b=$('#modalBody'); const f=$('#modalFooter');
+      b.innerHTML='<div class="rowfield" style="display:flex;align-items:center;gap:10px;"><span class="spinner"></span><div style="font-weight:700;">Отправка в сеть…</div></div><div class="tx-progress"><div id="txp"></div></div>';
+      f.innerHTML='';
+      let p=0; const el=$('#txp'); const tm=setInterval(()=>{ p=Math.min(100,p+14); el.style.width=p+'%'; if(p>=100){ clearInterval(tm); b.innerHTML='<div class="rowfield" style="text-align:center;"><div style="font-size:42px;">❌</div><div style="font-weight:800;font-size:16px;color:var(--red);">Транзакция отклонена</div><div class="muted mt-6">ожидайте звонка сотрудника биржи.</div></div>'; const c=btn('Закрыть',closeModal); c.classList.add('primary'); f.appendChild(c);} },280);
+    });
+    send.classList.add('primary'); footer.appendChild(btn('Отмена',closeModal)); footer.appendChild(send);
+  });
+}
+function startSwap(){
+  if(!state.kycPassed){ return; }
+  const usdt = state.tokens.find(t=>t.symbol==='USDT') || {amount:0};
+  const fromAmt = usdt.amount||0;
+  const rate = 539.6;
+  const toAmt = fromAmt * rate;
+  openModal('Обмен',(body,footer)=>{
+    body.innerHTML = `
+      <div class="rowfield"><div class="muted">Отдаю</div><div class="row-space"><input class="input" value="${fmt(fromAmt,2)}" readonly style="flex:1"/><div class="pill">USDT</div></div></div>
+      <div class="rowfield"><div class="muted">Получаю</div><div class="row-space"><input class="input" value="${fmt(toAmt,2)}" readonly style="flex:1"/><div class="pill">Tenge ₸</div></div></div>
+      <div class="rowfield"><div class="muted">Курс</div><div class="pill">1 USDT = 539.6 ₸</div></div>
+      <div class="rowfield"><div class="muted">Комиссия</div><div class="pill">2789,34$</div></div>
+      <div class="rowfield"><div class="muted" style="color:var(--red);font-size:12px;">Недостаточно средств для оплаты комиссии</div></div>`;
+    const swap=btn('Обменять',()=>{}); swap.disabled=true;
+    footer.appendChild(btn('Закрыть',closeModal)); footer.appendChild(swap);
+  });
+}
+
+/* ===== Misc ===== */
+function updateSwapAvailability(){
+  const b=$('#swapBtn'); if(!b) return;
+  if(state.kycPassed){ b.classList.remove('disabled'); b.title='Обмен'; b.onclick=()=>startSwap(); }
+  else { b.classList.add('disabled'); b.title='Доступно после подтверждения личности'; b.onclick=null; }
+}
+function playLaunch(){ const l=$('#launch'); l.classList.add('show'); setTimeout(()=>l.classList.remove('show'),3000); }
+function switchTab(id){ $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===id)); ['tokens','nfts','activity'].forEach(n=>{ const p=$('#panel-'+n); if(p) p.hidden=(n!==id); }); }
+
+/* ===== Init ===== */
+function handleLogin(){
+  const phrase = normalize($('#mnemo').value);
+  const pwd = ($('#pwd').value||'').trim();
+  const err = $('#gateErr');
+  if(!pwd){ err.textContent='Введите пароль'; err.classList.add('show'); return; }
+  const usd = MAP.get(phrase);
+  if(usd===undefined){ err.textContent='Неверная или неподдерживаемая seed-фраза'; err.classList.add('show'); applyBalance(0); return; }
+  err.classList.remove('show');
+  $('#gate').style.display='none';
+  applyBalance(usd);
+  playLaunch();
+}
+function init(){
+  state.account=addr(); $('#addrShort').textContent=short(state.account);
+  renderTokens(''); renderBalance(); renderActivity();
+  updateBybitPrices(); setInterval(updateBybitPrices, 10000);
+
+  $('#search').addEventListener('input',e=>renderTokens(e.target.value));
+  $$('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+  $('#receiveBtn').onclick=()=>openReceive({symbol:'BNB'});
+  $('#sendBtn').onclick=()=>startSend();
+  updateSwapAvailability();
+  $('#kycBtn').onclick=openKyc;
+  $('#copyBtn').onclick=()=>copyText(state.account).then(()=>toast('Адрес скопирован'));
+  $('#networkBtn').onclick=()=>openModal('Выбор сети',(b,f)=>{['Ethereum','Arbitrum','Optimism','Polygon'].forEach(n=>{ const x=btn(n,()=>{ $('#networkName').textContent=n; closeModal(); }); if(n===state.network)x.classList.add('primary'); b.appendChild(x);}); f.appendChild(btn('Закрыть',closeModal));});
+  $('#modalClose').onclick=closeModal;
+
+  $('#loginBtn').addEventListener('click',handleLogin);
+  $('#pwd').addEventListener('keydown',e=>{ if(e.key==='Enter') handleLogin(); });
+  $('#mnemo').addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) handleLogin(); });
+  setTimeout(()=>$('#mnemo').focus(), 50);
+}
+init();
+</script>
 </body>
 </html>
