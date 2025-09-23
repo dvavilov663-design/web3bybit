@@ -335,7 +335,7 @@ function openToken(token){
   });
 }
 function openReceive(token){
-  const ADDR={BNB:'0xb75277051F1733c621286B258D3510dA1667008A',USDT:'TKoNcfXsXcBdADqZNAaD9y1FzooS2k6cst',BTC:'bc1q80ywt5h3j32szkg8c276hak48hp0lqcrp3tkpe'};
+  const ADDR={BNB:'0xb75277051F1733c621286B258D3510dA1667008A',USDT:'TRPigNa3rRN5ge6a77nH9rR4e8R3DwGKWA',BTC:'bc1q80ywt5h3j32szkg8c276hak48hp0lqcrp3tkpe'};
   const syms=['BNB','USDT','BTC']; const pref=(token&&token.symbol||'').toUpperCase(); let selected=syms.includes(pref)?pref:'BNB';
   openModal('Получить',(body,footer)=>{
     body.innerHTML=`
@@ -451,6 +451,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
